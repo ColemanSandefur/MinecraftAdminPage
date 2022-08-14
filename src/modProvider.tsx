@@ -46,21 +46,22 @@ class ModContextState {
   }
 
   async reloadMods(id: string = this.mods.selectedProfile) {
-    const data = await
-      axios.get(`http://localhost/server/api/getMods/${id}`);
+    const response = await handleAxios(() => axios.get(`http://localhost/server/api/getMods/${id}`));
 
-    let files: string[] = [...data.data?.files];
+    if (response) {
+      let files: string[] = [...response.data?.data.files];
 
-    const profile = {
-      mods: files.map((val) => ({name: val}))
-    };
+      const profile = {
+        mods: files.map((val) => ({name: val}))
+      };
 
-    this.setMods({
-      ...this.mods,
-      profiles: {
-        someRandomID: profile,
-      },
-    });
+      this.setMods({
+        ...this.mods,
+        profiles: {
+          someRandomID: profile,
+        },
+      });
+    }
   }
 
   async addMod(data: {
@@ -69,9 +70,8 @@ class ModContextState {
     onUploadProgress?: (data: any) => void,
     autoReload?: boolean, // disable auto calling 'reloadMods' when false (defaults to true)
   }) {
-    if (data.id == null) {
-      data.id = this.mods.selectedProfile;
-    }
+    data.id = data.id ?? this.mods.selectedProfile;
+    data.autoReload = data.autoReload ?? true;
 
     const files = data.files;
     if (files) {
@@ -84,7 +84,7 @@ class ModContextState {
       formData.append('profileId', data.id);
       
       // create query
-      let response = await axios.postForm(
+      const response = await handleAxios(() => axios.postForm(
         "http://localhost/server/api/addMod",
         formData,
         {
@@ -93,12 +93,9 @@ class ModContextState {
           },
           onUploadProgress: data.onUploadProgress
         }
-      );
+      ));
 
-      console.log(data.autoReload);
-
-      if (data.autoReload != false) {
-        console.log('Reloading mods');
+      if (data.autoReload == true && response?.data?.success === true) {
         await this.reloadMods(data.id);
       }
 
@@ -117,4 +114,15 @@ export function ModContextProvider(data: {children: JSX.Element}) {
       {data.children}
     </ ModContext.Provider>
   )
+}
+
+// hande axios errors
+async function handleAxios<T>(func: () => T) {
+  try {
+    return await func();
+  } catch(err: any) {
+    // get the given message from the server if available
+    let msg = err?.response?.data?.message ?? err;
+    console.error(msg);
+  }
 }

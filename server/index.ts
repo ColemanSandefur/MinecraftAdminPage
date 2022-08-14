@@ -52,10 +52,10 @@ app.post("/api/addMod", upload.array('files', 20), (req: Request, res: Response)
       }
     }
 
-    res.send({success: true, message: "Successfully uploaded to the server"});
+    ResHandler.success(res, {message: "Successfully uploaded to the server"});
 
   } catch (error) {
-    res.send({success: false, message: "There was an error uploading to the server"});
+    ResHandler.fail(res, {message: "There was an error uploading to the server"});
   }
 });
 
@@ -66,13 +66,22 @@ app.get("/api/getMods/:profileId", (req: Request, res: Response) => {
 
     fs.readdir(profile.path, {}, (err, files) => {
       if (err) {
-        console.error(err);
-        res.send({success: false, message: "There was an error reading mods"});
+        ResHandler.fail(res, {message: "There was an error reading mods"});
+      } else {
+        ResHandler.success(res, {files: files});
       }
-
-      res.send({success: true, files: files});
-    })
+    });
   } catch (error) {
-    res.send({success: false, message: "No profile selected"});
+    ResHandler.fail(res, {message: "No Profile Selected"});
   }
 });
+
+class ResHandler {
+  static success<T>(res: Response, data: T) {
+    res.send({success: true, data: data});
+  }
+
+  static fail<T>(res: Response, data: {data?: T, message?: string, code?: number}) {
+    res.status(data.code ?? 500).send({success: false, ...data});
+  }
+}
