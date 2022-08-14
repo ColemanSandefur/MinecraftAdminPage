@@ -7,7 +7,7 @@ import multer from 'multer';
 dotenv.config();
 
 const upload = multer({
-  dest: 'uploads'
+  dest: 'uploads',
 });
 
 const app: Express = express();
@@ -59,3 +59,20 @@ app.post("/api/addMod", upload.array('files', 20), (req: Request, res: Response)
   }
 });
 
+// get mods
+app.get("/api/getMods/:profileId", (req: Request, res: Response) => {
+  try {
+    let profile = profiles[req.params.profileId];
+
+    fs.readdir(profile.path, {}, (err, files) => {
+      if (err) {
+        console.error(err);
+        res.send({success: false, message: "There was an error reading mods"});
+      }
+
+      res.send({success: true, files: files});
+    })
+  } catch (error) {
+    res.send({success: false, message: "No profile selected"});
+  }
+});
