@@ -1,6 +1,5 @@
 import {ThemeProvider} from '@emotion/react';
-import {Box, Paper, createTheme} from '@mui/material';
-//import './App.css';
+import {Box, createTheme} from '@mui/material';
 import {ModContextProvider} from './modProvider';
 import {ModsPage} from './Mods';
 
@@ -11,13 +10,14 @@ const darkTheme = createTheme({
 });
 
 function App() {
-  console.log(darkTheme);
   return (
     <ThemeProvider theme={darkTheme}>
       <ModContextProvider>
         <Box sx={{
-          width: "100vw",
-          height: "100vh",
+          width: "100%",
+          height: "100%",
+          minHeight: "100vh",
+          minWidth: "100vw",
           backgroundColor: darkTheme.palette.background.default,
           color: darkTheme.palette.text.primary,
         }}>

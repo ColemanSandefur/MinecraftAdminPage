@@ -76,6 +76,28 @@ app.get("/api/getMods/:profileId", (req: Request, res: Response) => {
   }
 });
 
+app.post('/api/removeMod', (req: Request, res: Response) => {
+  try {
+    const body: {profileId: string, fileName: string} = req.body;
+
+    let profile = profiles[body.profileId];
+    let fileName = body.fileName;
+
+    fs.rm(profile.path + fileName, (err) => {
+      if (err) {
+        ResHandler.fail(res, {message: err.message});
+        return;
+      }
+
+      ResHandler.success(res, {message: "Successfully removed file from server"});
+      return
+    });
+
+  } catch (error) {
+    ResHandler.fail(res, {message: "There was an error uploading to the server"});
+  }
+})
+
 class ResHandler {
   static success<T>(res: Response, data: T) {
     res.send({success: true, data: data});

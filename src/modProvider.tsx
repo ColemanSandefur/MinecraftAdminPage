@@ -3,22 +3,19 @@ import axios from "axios";
 
 type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
 
-interface ModContextState {
-  mods: ModContextType;
-  setMods: SetState<ModContextType>;
-}
-
-interface ModContextType {
+export interface ModContextType {
   profiles: {
     [id: string]: ProfileType
-  },
-  selectedProfile: string,
+  };
+  selectedProfile: string;
 }
 
-interface ProfileType {
-  mods: {
-    name: string
-  }[]
+export interface ProfileType {
+  mods: ModData[];
+}
+
+export interface ModData {
+  name: string;
 }
 
 const initialModContext: ModContextType = {
@@ -46,7 +43,7 @@ class ModContextState {
   }
 
   async reloadMods(id: string = this.mods.selectedProfile) {
-    const response = await handleAxios(() => axios.get(`http://localhost/server/api/getMods/${id}`));
+    const response = await handleAxios(() => axios.get(`/server/api/getMods/${id}`));
 
     if (response) {
       let files: string[] = [...response.data?.data.files];
@@ -85,7 +82,7 @@ class ModContextState {
       
       // create query
       const response = await handleAxios(() => axios.postForm(
-        "http://localhost/server/api/addMod",
+        "/server/api/addMod",
         formData,
         {
           headers: {
@@ -101,6 +98,43 @@ class ModContextState {
 
       return response;
     }
+  }
+
+  async removeMod(data: {
+    id?: string,
+    fileName: string,
+    autoReload?: boolean
+  }) {
+    data.id = data.id ?? this.mods.selectedProfile;
+    data.autoReload = data.autoReload ?? true;
+
+    const response = await handleAxios(() => axios.post("/server/api/removeMod", {
+      profileId: data.id,
+      fileName: data.fileName,
+    }));
+
+    if (response?.data?.success === true && data.autoReload === true) {
+      await this.reloadMods(data.id);
+    } 
+
+    return response;
+  }
+
+  async removeAllMods(data: {
+    id?: string,
+    autoReload?: boolean
+  }) {
+    data.id = data.id ?? this.mods.selectedProfile;
+    data.autoReload = data.autoReload ?? true;
+    const profileMods = this.getSelectedProfile()?.mods ?? [];
+
+    const responses = await Promise.all(profileMods.map((mod) => {
+      this.removeMod({fileName: mod.name, ...data})
+    }));
+
+    if (data.autoReload === true) {
+      await this.reloadMods(data.id);
+    } 
   }
 }
 
@@ -123,6 +157,6 @@ async function handleAxios<T>(func: () => T) {
   } catch(err: any) {
     // get the given message from the server if available
     let msg = err?.response?.data?.message ?? err;
-    console.error(msg);
+    console.error("AXIOS ERROR: ", msg);
   }
 }
