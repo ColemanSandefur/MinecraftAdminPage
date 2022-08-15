@@ -1,7 +1,7 @@
 import {ThemeProvider} from '@emotion/react';
 import {Box, createTheme} from '@mui/material';
-import {ModContextProvider} from './modProvider';
-import {ModsPage} from './Mods';
+import {ModContextProvider} from './services/modProvider';
+import {ModsPage} from './pages/modList/modsPage';
 
 const darkTheme = createTheme({
   palette: {
