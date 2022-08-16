@@ -1,8 +1,9 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import {Profile} from './profile.model';
-import fs from 'fs';
 import multer from 'multer';
+import {ModManager} from './modManager';
+import {ResHandler} from './util/util';
 
 dotenv.config();
 
@@ -18,8 +19,13 @@ const profiles: {[id: string]: Profile} = {
     name: "My First Id",
     id: "someRandomID",
     path: process.env.MINECRAFT_PATH!,
+    manager: new ModManager(process.env.MINECRAFT_PATH!),
   }
 };
+
+for (const profile of Object.values(profiles)) {
+  profile.manager.loadModsDir();
+}
 
 app.use(express.json());
 
@@ -40,16 +46,21 @@ interface AddModData {
   profileId: string,
 }
 
-app.post("/api/addMod", upload.array('files', 20), (req: Request, res: Response) => {
+app.post("/api/addMod", upload.array('files', 20), async (req: Request, res: Response) => {
   try {
     const body: AddModData = req.body;
 
     let profile = profiles[body.profileId];
 
     if (Array.isArray(req.files)) {
-      for (const file of req.files!) {
-        fs.rename(file.path, profile.path + file.originalname, (err) => {if (err) {console.error(err)}});
-      }
+      await Promise.all(req.files.map((file) => {
+        const mod = {
+          fileName: file.originalname,
+        };
+        profile.manager.addMod(mod, {oldPath: file.path, autoSave: false});
+      }));
+
+      profile.manager.saveMetadata();
     }
 
     ResHandler.success(res, {message: "Successfully uploaded to the server"});
@@ -60,50 +71,35 @@ app.post("/api/addMod", upload.array('files', 20), (req: Request, res: Response)
 });
 
 // get mods
-app.get("/api/getMods/:profileId", (req: Request, res: Response) => {
+app.get("/api/getMods/:profileId", async (req: Request, res: Response) => {
   try {
     let profile = profiles[req.params.profileId];
 
-    fs.readdir(profile.path, {}, (err, files) => {
-      if (err) {
-        ResHandler.fail(res, {message: "There was an error reading mods"});
-      } else {
-        ResHandler.success(res, {files: files});
-      }
-    });
+    try {
+      await profile.manager.loadModsDir()
+      const files = Object.keys(profile.manager.managerData?.mods ?? []);
+
+      ResHandler.success(res, {files: files});
+    } catch {
+      ResHandler.fail(res, {message: "There was an error reading mods"});
+    }
   } catch (error) {
-    ResHandler.fail(res, {message: "No Profile Selected"});
+    ResHandler.fail(res, {message: "Unable to remove mod from server"});
   }
 });
 
-app.post('/api/removeMod', (req: Request, res: Response) => {
+app.post('/api/removeMod', async (req: Request, res: Response) => {
   try {
     const body: {profileId: string, fileName: string} = req.body;
 
     let profile = profiles[body.profileId];
     let fileName = body.fileName;
 
-    fs.rm(profile.path + fileName, (err) => {
-      if (err) {
-        ResHandler.fail(res, {message: err.message});
-        return;
-      }
-
-      ResHandler.success(res, {message: "Successfully removed file from server"});
-      return
-    });
+    await profile.manager.removeMod(fileName);
+    ResHandler.success(res, {message: "Successfully removed file from server"});
 
   } catch (error) {
     ResHandler.fail(res, {message: "There was an error uploading to the server"});
   }
-})
+});
 
-class ResHandler {
-  static success<T>(res: Response, data: T) {
-    res.send({success: true, data: data});
-  }
-
-  static fail<T>(res: Response, data: {data?: T, message?: string, code?: number}) {
-    res.status(data.code ?? 500).send({success: false, ...data});
-  }
-}

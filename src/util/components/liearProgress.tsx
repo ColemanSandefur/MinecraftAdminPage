@@ -11,7 +11,7 @@ export const BigLinearProgress = styled(LinearProgress)(({}) => ({
 }));
 
 // Create a hybrid progress bar that will be determinate when value is < 100
-// when value == 100 it will switch to an indeterminate bar after switchDelay seconds
+// when value == 100 it will switch to an indeterminate bar after switchDelay milliseconds
 // switchDelay default: 1000ms
 // variant default: normal
 export function HybridLinear(data: {value: number, variant?: 'normal' | 'big', switchDelay?: number, linearProps?: LinearProgressProps}) {
