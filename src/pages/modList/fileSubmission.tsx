@@ -29,10 +29,13 @@ export function ModEntry(data: {mod: ModHolder, setMod: (mod: ModHolder, modId: 
   }
 
   const valueChange = () => {
+    // convert a falsey value (ex: '') to undefined
+    const nullStr = (value: any) => value || undefined;
+
     const newMod: ModHolder = {
       file: file.current?.files?.[0],
-      name: name.current?.value,
-      description: description.current?.value
+      name: nullStr(name.current?.value),
+      description: nullStr(description.current?.value),
     };
 
     data.setMod(newMod, data.modId);
@@ -76,7 +79,6 @@ export function UploadDialog(data: {open: boolean, setOpen: (state: boolean) => 
     mods[idx] = newMod;
   }
   const addNewMod = () => {
-    console.log('adding mod:', mods);
     setMods([...mods, {}]);
   }
 

@@ -52,9 +52,7 @@ app.post("/api/addMod", upload.array('files', 20), async (req: Request, res: Res
     const body: AddModData = req.body;
 
     let profile = profiles[body.profileId];
-    body.fileData = JSON.parse(body.fileData as unknown as string);
-    console.log('fileData: ', body.fileData);
-    console.log('reqFiles: ', req.files);
+    body.fileData = (typeof body.fileData === 'string') ? JSON.parse(body.fileData as unknown as string) : body.fileData;
 
     if (Array.isArray(req.files)) {
       await Promise.all(req.files.map((file, idx) => {
@@ -83,8 +81,8 @@ app.get("/api/getMods/:profileId", async (req: Request, res: Response) => {
     let profile = profiles[req.params.profileId];
 
     try {
-      await profile.manager.loadModsDir()
-      const files = Object.keys(profile.manager.managerData?.mods ?? []);
+      await profile.manager.loadModsDir();
+      const files = Object.values(profile.manager.managerData?.mods ?? []);
 
       ResHandler.success(res, {files: files});
     } catch {

@@ -1,3 +1,7 @@
+# Minecraft Admin Page
+
+This is a simple minecraft admin website to easily add and remove mods from a minecraft server.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

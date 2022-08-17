@@ -15,7 +15,9 @@ export interface ProfileType {
 }
 
 export interface ModData {
-  name: string;
+  fileName: string;
+  name?: string;
+  description?: string;
 }
 
 export interface AddModData {
@@ -52,10 +54,10 @@ class ModContextState {
     const response = await handleAxios(() => axios.get(`/server/api/getMods/${id}`));
 
     if (response) {
-      let files: string[] = [...response.data?.data.files];
+      let files: ModData[] = [...response.data?.data.files];
 
-      const profile = {
-        mods: files.map((val) => ({name: val}))
+      const profile: ProfileType = {
+        mods: files
       };
 
       this.setMods({
@@ -135,7 +137,7 @@ class ModContextState {
     const profileMods = this.getSelectedProfile()?.mods ?? [];
 
     await Promise.all(profileMods.map((mod) => {
-      this.removeMod({fileName: mod.name, ...data})
+      this.removeMod({fileName: mod.fileName, ...data})
     }));
 
     if (data.autoReload === true) {
@@ -174,7 +176,6 @@ class ModContextState {
         }
       })
       const fileData = new Blob([JSON.stringify(mods)], {type: 'application/json'});
-      console.log(JSON.stringify(mods));
       formData.append('fileData', fileData, '');
       formData.append('profileId', data.id);
       
