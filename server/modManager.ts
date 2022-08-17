@@ -4,6 +4,9 @@ import {safe} from './util/util';
 
 export interface Mod {
   fileName: string;
+  description?: string,
+  link?: string,
+  name?: string,
 }
 
 interface ManagerMetadata {
@@ -30,8 +33,6 @@ export class ModManager {
     try {
       oldManager = JSON.parse(await readFile(managerPath));
     } catch {}
-
-    this.managerData!.mods = {};
 
     let modFiles = await readDir(this.directory);
 

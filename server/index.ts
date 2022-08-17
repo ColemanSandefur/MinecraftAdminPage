@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import {Profile} from './profile.model';
 import multer from 'multer';
-import {ModManager} from './modManager';
+import {Mod, ModManager} from './modManager';
 import {ResHandler} from './util/util';
 
 dotenv.config();
@@ -28,6 +28,7 @@ for (const profile of Object.values(profiles)) {
 }
 
 app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
 app.get('/', (_req: Request, res: Response) => {
   res.send('Express + TypeScript Server');
@@ -38,9 +39,9 @@ app.listen(port, () => {
 });
   
 interface AddModData {
-  files: {
+  fileData: {
+    fileName: string,
     name: string,
-    data: string,
     description: string,
   }[],
   profileId: string,
@@ -51,11 +52,17 @@ app.post("/api/addMod", upload.array('files', 20), async (req: Request, res: Res
     const body: AddModData = req.body;
 
     let profile = profiles[body.profileId];
+    body.fileData = JSON.parse(body.fileData as unknown as string);
+    console.log('fileData: ', body.fileData);
+    console.log('reqFiles: ', req.files);
 
     if (Array.isArray(req.files)) {
-      await Promise.all(req.files.map((file) => {
-        const mod = {
+      await Promise.all(req.files.map((file, idx) => {
+        let fileData = body.fileData?.[idx];
+        const mod: Mod = {
           fileName: file.originalname,
+          name: fileData?.name,
+          description: fileData?.description,
         };
         profile.manager.addMod(mod, {oldPath: file.path, autoSave: false});
       }));

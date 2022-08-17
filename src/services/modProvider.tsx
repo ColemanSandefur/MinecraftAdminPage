@@ -18,6 +18,12 @@ export interface ModData {
   name: string;
 }
 
+export interface AddModData {
+  file: File;
+  name?: string;
+  description?: string;
+}
+
 const initialModContext: ModContextType = {
   profiles: {},
   selectedProfile: 'someRandomID',
@@ -128,13 +134,68 @@ class ModContextState {
     data.autoReload = data.autoReload ?? true;
     const profileMods = this.getSelectedProfile()?.mods ?? [];
 
-    const responses = await Promise.all(profileMods.map((mod) => {
+    await Promise.all(profileMods.map((mod) => {
       this.removeMod({fileName: mod.name, ...data})
     }));
 
     if (data.autoReload === true) {
       await this.reloadMods(data.id);
     } 
+  }
+
+  async addMod2(data: {
+    id?: string,
+    files?: AddModData[],
+    onUploadProgress?: (data: any) => void,
+    autoReload?: boolean, // disable auto calling 'reloadMods' when false (defaults to true)
+  }) {
+    data.id = data.id ?? this.mods.selectedProfile;
+    data.autoReload = data.autoReload ?? true;
+
+    const files = data.files;
+    if (files) {
+      const formData = new FormData();
+
+      // add data to formData
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i].file, files[i].file.name);
+      }
+
+      let mods: {
+        fileName: string,
+        name?: string,
+        description?: string,
+        link?: string,
+      }[] = files.map((file) => {
+        return {
+          fileName: file.file.name,
+          name: file.name,
+          description: file.description,
+        }
+      })
+      const fileData = new Blob([JSON.stringify(mods)], {type: 'application/json'});
+      console.log(JSON.stringify(mods));
+      formData.append('fileData', fileData, '');
+      formData.append('profileId', data.id);
+      
+      // create query
+      const response = await handleAxios(() => axios.postForm(
+        "/server/api/addMod",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          },
+          onUploadProgress: data.onUploadProgress
+        }
+      ));
+
+      if (data.autoReload == true && response?.data?.success === true) {
+        await this.reloadMods(data.id);
+      }
+
+      return response;
+    }
   }
 }
 

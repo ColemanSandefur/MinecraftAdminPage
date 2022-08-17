@@ -1,9 +1,10 @@
 import {Alert, Box, Paper, SpeedDial, SpeedDialAction, SpeedDialIcon, Stack} from "@mui/material";
-import {useContext, useEffect} from "react";
+import {useContext, useEffect, useState} from "react";
 import {ModContext, ModData} from "../../services/modProvider";
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from "@mui/material/IconButton";
-import { FileSubmission } from "./fileSubmission";
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { UploadDialog } from "./fileSubmission";
 
 function ModItem(data: {modData: ModData}) {
   const modContext = useContext(ModContext);
@@ -20,6 +21,7 @@ function ModItem(data: {modData: ModData}) {
 
 export function ModsPage() {
   const modContext = useContext(ModContext);
+  const [open, setOpen] = useState(false);
 
   let modDisplay = modContext.getSelectedProfile()?.mods.map((val) => <ModItem key={val.name} modData={val} />);
 
@@ -36,7 +38,6 @@ export function ModsPage() {
         { modDisplay }
         { (!modDisplay?.length) && <Alert severity="info">No Mods Found</Alert> }
 
-        <FileSubmission />
         {/* Just a buffer at the bottom for the action button */}
         <Box height={50}/>
       </Stack>
@@ -51,7 +52,14 @@ export function ModsPage() {
           title={'Delete all mods'}
           tooltipTitle={'Delete all mods'}
         />
+        <SpeedDialAction
+          icon={<FileUploadIcon />}
+          title={'Upload mod'}
+          tooltipTitle={'Upload mod'}
+          onClick={() => setOpen(true)}
+        />
       </SpeedDial>
+      <UploadDialog open={open} setOpen={setOpen} />
     </>
   );
 }
