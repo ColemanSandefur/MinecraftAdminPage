@@ -1,6 +1,6 @@
 import path from 'path';
-import {moveFile, readDir, readFile, removeFile, writeFile} from "./util/myFs";
-import {safe} from './util/util';
+import {moveFile, readDir, readFile, removeFile, writeFile} from "../../../util/myFs";
+import {safe} from '../../../util/util';
 
 export interface Mod {
   fileName: string;

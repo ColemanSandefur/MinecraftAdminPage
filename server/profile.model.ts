@@ -1,4 +1,4 @@
-import {ModManager} from "./modManager";
+import {ModManager} from "./routes/api/mod/modManager";
 
 export interface Profile {
   id: string;

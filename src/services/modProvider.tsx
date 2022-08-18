@@ -51,7 +51,7 @@ class ModContextState {
   }
 
   async reloadMods(id: string = this.mods.selectedProfile) {
-    const response = await handleAxios(() => axios.get(`/server/api/getMods/${id}`));
+    const response = await handleAxios(() => axios.get(`/server/api/mod/getMods/${id}`));
 
     if (response) {
       let files: ModData[] = [...response.data?.data.files];
@@ -90,7 +90,7 @@ class ModContextState {
       
       // create query
       const response = await handleAxios(() => axios.postForm(
-        "/server/api/addMod",
+        "/server/api/mod/addMod",
         formData,
         {
           headers: {
@@ -116,7 +116,7 @@ class ModContextState {
     data.id = data.id ?? this.mods.selectedProfile;
     data.autoReload = data.autoReload ?? true;
 
-    const response = await handleAxios(() => axios.post("/server/api/removeMod", {
+    const response = await handleAxios(() => axios.post("/server/api/mod/removeMod", {
       profileId: data.id,
       fileName: data.fileName,
     }));
@@ -181,7 +181,7 @@ class ModContextState {
       
       // create query
       const response = await handleAxios(() => axios.postForm(
-        "/server/api/addMod",
+        "/server/api/mod/addMod",
         formData,
         {
           headers: {
