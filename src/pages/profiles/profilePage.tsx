@@ -1,4 +1,4 @@
-import {Box, BoxProps, IconButton, List, Paper, Stack} from "@mui/material";
+import {Box, BoxProps, Container, IconButton, List, Paper, Stack} from "@mui/material";
 import {useContext, useEffect, useRef} from "react";
 import {ModContext, ProfileType} from "../../services/modProvider/modProvider";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -59,10 +59,10 @@ export function ProfilePage() {
   },[])
 
   return (
-    <>
+    <Container maxWidth='md'>
       <Stack spacing={2}>
         {entries}
       </Stack>
-    </>
+    </Container>
   )
 }

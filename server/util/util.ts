@@ -17,3 +17,5 @@ export class ResHandler {
     res.status(data.code ?? 500).send({success: false, ...data});
   }
 }
+
+export type Modify<T, R> = Omit<T, keyof R> & R

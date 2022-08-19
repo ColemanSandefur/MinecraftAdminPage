@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
-import {profiles} from '../../..';
 import {Mod} from './modManager';
 import {ResHandler} from '../../../util/util';
+import {profileManager} from '../../..';
 
 const mod = express();
 const upload = multer({
@@ -22,8 +22,13 @@ mod.post("/addMod", upload.array('files', 20), async (req: Request, res: Respons
   try {
     const body: AddModData = req.body;
 
-    let profile = profiles[body.profileId];
+    let profile = profileManager.getProfile(body.profileId);
     body.fileData = (typeof body.fileData === 'string') ? JSON.parse(body.fileData as unknown as string) : body.fileData;
+
+    if (profile == null) {
+      ResHandler.fail(res, {message: "Profile not available"});
+      return;
+    }
 
     if (Array.isArray(req.files)) {
       await Promise.all(req.files.map((file, idx) => {
@@ -33,10 +38,10 @@ mod.post("/addMod", upload.array('files', 20), async (req: Request, res: Respons
           name: fileData?.name,
           description: fileData?.description,
         };
-        profile.manager.addMod(mod, {oldPath: file.path, autoSave: false});
+        profile?.manager.addMod(mod, {oldPath: file.path, autoSave: false});
       }));
 
-      profile.manager.saveMetadata();
+      profile?.manager.saveMetadata();
     }
 
     ResHandler.success(res, {message: "Successfully uploaded to the server"});
@@ -49,7 +54,12 @@ mod.post("/addMod", upload.array('files', 20), async (req: Request, res: Respons
 // get mods
 mod.get("/getMods/:profileId", async (req: Request, res: Response) => {
   try {
-    let profile = profiles[req.params.profileId];
+    let profile = profileManager.getProfile(req.params.profileId);
+
+    if (profile == null) {
+      ResHandler.fail(res, {message: "Profile not available"});
+      return;
+    }
 
     try {
       await profile.manager.loadModsDir();
@@ -68,8 +78,13 @@ mod.post('/removeMod', async (req: Request, res: Response) => {
   try {
     const body: {profileId: string, fileName: string} = req.body;
 
-    let profile = profiles[body.profileId];
+    let profile = profileManager.getProfile(body.profileId);
     let fileName = body.fileName;
+
+    if (profile == null) {
+      ResHandler.fail(res, {message: "Profile not available"})
+      return;
+    }
 
     await profile.manager.removeMod(fileName);
     ResHandler.success(res, {message: "Successfully removed file from server"});

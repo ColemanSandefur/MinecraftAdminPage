@@ -1,4 +1,5 @@
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, TextFieldProps} from "@mui/material";
+import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, TextField, TextFieldProps} from "@mui/material";
+import {Stack} from "@mui/system";
 import {useContext, useEffect, useRef, useState} from "react";
 import {AddModData, ModContext} from "../../services/modProvider/modProvider";
 import { Delay } from "../../util/components/delay";
@@ -9,7 +10,7 @@ type ModHolder = Modify<AddModData, {
   file?: File
 }>;
 
-export function ModEntry(data: {mod: ModHolder, setMod: (mod: ModHolder, modId: number) => void, modId: number}) {
+export function ModEntry(data: {mod: ModHolder, setMod: (mod: ModHolder, modId: number) => void, modId: number, removeMod: (modId: number) => void, showDelete?: boolean}) {
   const file = useRef<HTMLInputElement>(null);
   const description = useRef<HTMLInputElement>(null);
   const name = useRef<HTMLInputElement>(null);
@@ -21,7 +22,7 @@ export function ModEntry(data: {mod: ModHolder, setMod: (mod: ModHolder, modId: 
     const numFiles = file.current?.files?.length ?? 0;
     if (numFiles > 1) {
       setFileNames(`${numFiles} selected`);
-    } else if (numFiles === 1) {
+    } else if (numFiles == 1) {
       setFileNames(files.item(0)!.name);
     } else {
       setFileNames(null);
@@ -62,32 +63,52 @@ export function ModEntry(data: {mod: ModHolder, setMod: (mod: ModHolder, modId: 
       </Box>
       <MyTextField id="name" label="Name" margin="dense" fullWidth inputRef={name} defaultValue={data.mod.name}/>
       <MyTextField id="description" label="Description" margin="dense" fullWidth inputRef={description} defaultValue={data.mod.description} />
+      {data.showDelete === true && <Button onClick={() => data.removeMod(data.modId)}>Remove</Button> }
     </form>
   )
 }
 
 export function UploadDialog(data: {open: boolean, setOpen: (state: boolean) => void}) {
-  const handleClose = () => {
-    data.setOpen(false);
-  };
+
+  //
+  // Hooks
+  //
+
   const modContext = useContext(ModContext);
   const [progress, setProgress] = useState<number | null>(null);
-
-  // Create list of mods
-  const [mods, setMods] = useState<ModHolder[]>([{}, {}]);
-  const onChange = (newMod: ModHolder, idx: number) => {
-    mods[idx] = newMod;
-  }
-  const addNewMod = () => {
-    setMods([...mods, {}]);
-  }
-
-  let modElements = mods.map((mod, idx) => <ModEntry key={idx} modId={idx} mod={mod} setMod={onChange} />);
+  const [mods, setMods] = useState<ModHolder[]>([{}, {}]); // Create list of mods
 
   useEffect(() => {
     setProgress(null);
     setMods([{}]);
   }, [data.open])
+
+  //
+  // Functions
+  //
+
+  // used to close popup
+  const handleClose = () => {
+    data.setOpen(false);
+  };
+
+  const setMod = (newMod: ModHolder, idx: number) => {
+    mods[idx] = newMod;
+  }
+  const addNewMod = () => {
+    setMods([...mods, {}]);
+  }
+  const removeMod = (idx?: number) => {
+    idx = idx ?? Math.max(mods.length - 1, 0);
+
+    if (idx != null && idx < mods.length) {
+      const newMods = [...mods];
+      newMods.splice(idx, 1);
+      setMods(newMods);
+    }
+
+    console.log('newMods:', mods);
+  }
 
   const submitFiles = async (event?: React.MouseEvent) => {
     setMods(mods);
@@ -113,11 +134,15 @@ export function UploadDialog(data: {open: boolean, setOpen: (state: boolean) => 
     handleClose();
   };
 
+  let modElements = mods.map((mod, idx) => <ModEntry key={idx} modId={idx} mod={mod} setMod={setMod} removeMod={removeMod} showDelete={mods.length > 1}/>);
+
   return (
     <Dialog open={data.open} onClose={() => data.setOpen(false)}>
       <DialogTitle>Upload File</DialogTitle>
       <DialogContent>
-        {modElements}
+        <Stack divider={<Divider orientation="horizontal" />} spacing={2} >
+          {modElements}
+        </Stack>
         {progress != null && <Delay><HybridLinear variant='big' value={progress} /></Delay>}
       </DialogContent>
       <DialogActions>
