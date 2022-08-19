@@ -1,5 +1,5 @@
 import {Box, BoxProps, IconButton, List, Paper, Stack} from "@mui/material";
-import {useContext, useEffect} from "react";
+import {useContext, useEffect, useRef} from "react";
 import {ModContext, ProfileType} from "../../services/modProvider/modProvider";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CheckIcon from '@mui/icons-material/Check';
@@ -49,13 +49,13 @@ function ProfileEntry(props: {profile: ProfileType}) {
 }
 
 export function ProfilePage() {
-  const modContext = useContext(ModContext);
-  const entries = Object.values(modContext.mods.profiles).map((profile) => {
+  const modContext = useRef(useContext(ModContext));
+  const entries = Object.values(modContext.current.mods.profiles).map((profile) => {
     return (<ProfileEntry key={profile.id} profile={profile} />)
   });
 
   useEffect(() => {
-    modContext.reloadProfiles();
+    modContext.current.reloadProfiles();
   },[])
 
   return (

@@ -21,7 +21,7 @@ export function ModEntry(data: {mod: ModHolder, setMod: (mod: ModHolder, modId: 
     const numFiles = file.current?.files?.length ?? 0;
     if (numFiles > 1) {
       setFileNames(`${numFiles} selected`);
-    } else if (numFiles == 1) {
+    } else if (numFiles === 1) {
       setFileNames(files.item(0)!.name);
     } else {
       setFileNames(null);

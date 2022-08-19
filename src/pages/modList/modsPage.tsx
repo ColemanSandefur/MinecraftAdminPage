@@ -1,5 +1,5 @@
 import {Alert, Box, Container, Paper, SpeedDial, SpeedDialAction, SpeedDialIcon, Stack} from "@mui/material";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useState} from "react";
 import {ModContext, ModData} from "../../services/modProvider/modProvider";
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from "@mui/material/IconButton";

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {LinearProgressProps} from "@mui/material/LinearProgress";
 
 // Create a thick linear progress bar that has rounded corners
-export const BigLinearProgress = styled(LinearProgress)(({}) => ({
+export const BigLinearProgress = styled(LinearProgress)(() => ({
   height: 10,
   borderRaidus: 5,
 }));
@@ -29,7 +29,7 @@ export function HybridLinear(data: {value: number, variant?: 'normal' | 'big', s
     return () => {
       clearTimeout(timeout);
     }
-  }, [data.value]);
+  }, [data.value, data.switchDelay]);
 
   let Comp: StyledComponent<LinearProgressProps & any, {}, {}> | ((props: LinearProgressProps) => JSX.Element);
   if (data.variant === 'big') {

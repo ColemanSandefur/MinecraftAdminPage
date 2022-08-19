@@ -78,7 +78,7 @@ class ModContextState {
         newProfiles.selectedProfile = Object.keys(profiles)[0] ?? ''
       }
 
-      if (options?.reloadMods ?? true === true) {
+      if ((options?.reloadMods ?? true) === true) {
         await Promise.all(Object.keys(profiles).map(async (id) => {
           return await this.reloadMods(id, {save: false, modData: newProfiles});
         }));
@@ -96,14 +96,14 @@ class ModContextState {
     const response = await handleAxios(() => axios.get(`/server/api/mod/getMods/${id}`));
     const mods = options?.modData ?? this.mods;
 
-    if (id != '' && response) {
+    if (id !== '' && response) {
       let files: ModData[] = [...response.data?.data.files];
 
       const profile: ProfileHolder = { ...mods.profiles };
 
       profile[id].mods = files;
 
-      if (options?.save ?? true === true) {
+      if ((options?.save ?? true) === true) {
         this.setMods({
           ...this.mods,
           profiles: profile
@@ -158,7 +158,7 @@ class ModContextState {
         }
       ));
 
-      if (data.autoReload == true && response?.data?.success === true) {
+      if (data.autoReload === true && response?.data?.success === true) {
         await this.reloadMods(data.id);
       }
 
@@ -195,7 +195,7 @@ class ModContextState {
     const profileMods = this.getSelectedProfile()?.mods ?? [];
 
     await Promise.all(profileMods.map((mod) => {
-      this.removeMod({fileName: mod.fileName, ...data})
+      return this.removeMod({fileName: mod.fileName, ...data})
     }));
 
     if (data.autoReload === true) {

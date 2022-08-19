@@ -1,5 +1,5 @@
 import {ThemeProvider} from '@emotion/react';
-import {Backdrop, Box, CircularProgress, createTheme, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from '@mui/material';
+import {Backdrop, Box, CircularProgress, createTheme, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from '@mui/material';
 import {ModContext, ModContextProvider} from './services/modProvider/modProvider';
 import {ModsPage} from './pages/modList/modsPage';
 import {
@@ -20,7 +20,7 @@ const darkTheme = createTheme({
   },
 });
 
-function SideBar(props: {}) {
+function SideBar(_props: {}) {
   const navigate = useNavigate();
 
   const paths: {text: string, path: string, icon?: JSX.Element}[] = [
@@ -56,13 +56,13 @@ function SideBar(props: {}) {
 
 function Loader(props: {children: ReactNode}) {
   const [loading, setLoading] = useState(false);
-  const modContext = useContext(ModContext);
+  const modContext = useRef(useContext(ModContext));
 
   useEffect(() => {
     setLoading(true);
 
     Promise.all([
-      modContext.reloadProfiles(),
+      modContext.current.reloadProfiles(),
     ]).then(() => setLoading(false));
 
     return () => {

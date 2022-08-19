@@ -12,7 +12,7 @@ export function Delay(data: {children?: JSX.Element, delayMS?: number}) {
     return () => {
       clearTimeout(handle);
     }
-  }, [])
+  }, [delay])
 
   return (
     <>
