@@ -16,6 +16,12 @@ export const profiles: {[id: string]: Profile} = {
     id: "someRandomID",
     path: path.resolve(process.env.MINECRAFT_PATH!),
     manager: new ModManager(process.env.MINECRAFT_PATH!),
+  },
+  mySecondId: {
+    name: "My Second Id",
+    id: "mySecondId",
+    path: path.resolve('./user_data2/'),
+    manager: new ModManager('./user_data2/'),
   }
 };
 

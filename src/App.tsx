@@ -84,6 +84,12 @@ function Loader(props: {children: ReactNode}) {
   return (<>{props.children}</>)
 }
 
+function Toolbar() {
+  const modContext = useContext(ModContext);
+
+  return <>{modContext.getSelectedProfile()?.name}</>
+}
+
 function App() {
   return (
     <ThemeProvider theme={darkTheme}>
@@ -100,7 +106,7 @@ function App() {
             <header className="App-header" >
               <Loader>
                 <Router>
-                  <ResponsiveDrawer drawer={<SideBar />} >
+                  <ResponsiveDrawer drawer={<SideBar />} toolbar={<Toolbar />}>
                     <Routes>
                       <Route path="/" element={<ModsPage />} />
                       <Route path="/profiles" element={<ProfilePage />} />

@@ -1,8 +1,11 @@
-import {Box, BoxProps, List, Paper} from "@mui/material";
+import {Box, BoxProps, IconButton, List, Paper, Stack} from "@mui/material";
 import {useContext, useEffect} from "react";
 import {ModContext, ProfileType} from "../../services/modProvider/modProvider";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CheckIcon from '@mui/icons-material/Check';
 
 function ProfileEntry(props: {profile: ProfileType}) {
+  const modContext = useContext(ModContext);
   const Text = (data: BoxProps) => {
     return <Box margin={0} component='p' {...data}>{data.children}</Box>
   }
@@ -16,6 +19,17 @@ function ProfileEntry(props: {profile: ProfileType}) {
 
   const title = (<Text fontSize={32}>{props.profile.name}</Text>);
 
+  const SelectButton = () => {
+    const currentSelected = (modContext.mods.selectedProfile === props.profile.id);
+    const icon = (currentSelected) ? <CheckIcon sx={{color: 'green'}}/> : <AddCircleIcon />;
+
+    return (
+      <IconButton onClick={() => modContext.setProfile(props.profile.id)} disabled={currentSelected}>
+        {icon}
+      </IconButton>
+    )
+  }
+
   return (
     <>
       <Paper sx={{padding: 2, overflowWrap: "anywhere", display: "flex", alignItems: "center", justifyContent: "space-between"}} elevation={1}>
@@ -26,6 +40,9 @@ function ProfileEntry(props: {profile: ProfileType}) {
           <Field fieldName='path'>{props.profile.path}</Field>
           <Field fieldName='Mods'>{props.profile.mods.length}</Field>
         </Box>
+        <List>
+          <SelectButton />
+        </List>
       </Paper>
     </>
   )
@@ -43,9 +60,9 @@ export function ProfilePage() {
 
   return (
     <>
-      <List>
+      <Stack spacing={2}>
         {entries}
-      </List>
+      </Stack>
     </>
   )
 }

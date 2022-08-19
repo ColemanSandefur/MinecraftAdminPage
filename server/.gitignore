@@ -2,4 +2,5 @@ node_modules
 .env
 dist
 user_data
+user_data2
 uploads

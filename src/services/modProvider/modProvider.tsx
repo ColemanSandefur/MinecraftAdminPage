@@ -52,6 +52,10 @@ class ModContextState {
     return null;
   }
 
+  setProfile(id: string) {
+    this.setMods({...this.mods, selectedProfile: id});
+  }
+
   // reload all the profiles
   async reloadProfiles(options?: {
     reloadMods?: boolean, // Reload all of the fetched profiles' mods (true)

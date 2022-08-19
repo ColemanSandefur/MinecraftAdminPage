@@ -59,7 +59,16 @@ export class ModManager {
   }
 
   async saveMetadata() {
-    await writeFile(this.managerPath(), JSON.stringify(this.managerData!, null, "\t"));
+    try {
+      const stringify = JSON.stringify(this.managerData!, null, "\t");
+      const path = this.managerPath();
+
+      if (stringify && path) {
+        await writeFile(path, stringify);
+      }
+    } catch(err) {
+      console.log('save error', err);
+    }
   }
 
   async addMod(mod: Mod, options: {oldPath?: string, autoSave?: boolean}) {
