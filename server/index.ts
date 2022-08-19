@@ -1,8 +1,9 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 import {Profile} from './profile.model';
 import {ModManager} from './routes/api/mod/modManager';
 import {apiApp} from './routes/api/apiRoutes';
+import path from 'path';
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ export const profiles: {[id: string]: Profile} = {
   someRandomID: {
     name: "My First Id",
     id: "someRandomID",
-    path: process.env.MINECRAFT_PATH!,
+    path: path.resolve(process.env.MINECRAFT_PATH!),
     manager: new ModManager(process.env.MINECRAFT_PATH!),
   }
 };

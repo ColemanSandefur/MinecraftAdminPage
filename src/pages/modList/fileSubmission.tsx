@@ -1,6 +1,6 @@
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, TextFieldProps} from "@mui/material";
 import {useContext, useEffect, useRef, useState} from "react";
-import {AddModData, ModContext} from "../../services/modProvider";
+import {AddModData, ModContext} from "../../services/modProvider/modProvider";
 import { Delay } from "../../util/components/delay";
 import { HybridLinear } from "../../util/components/liearProgress";
 import { Modify } from "../../util/util";
@@ -105,7 +105,7 @@ export function UploadDialog(data: {open: boolean, setOpen: (state: boolean) => 
       }
     });
 
-    await modContext.addMod2({
+    await modContext.addMod({
       files: submitMods,
       onUploadProgress: (event) => {setProgress(Math.round(event.loaded / event.total * 100))}
     });

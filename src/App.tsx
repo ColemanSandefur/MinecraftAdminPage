@@ -1,6 +1,6 @@
 import {ThemeProvider} from '@emotion/react';
-import {Box, createTheme, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from '@mui/material';
-import {ModContextProvider} from './services/modProvider';
+import {Backdrop, Box, CircularProgress, createTheme, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from '@mui/material';
+import {ModContext, ModContextProvider} from './services/modProvider/modProvider';
 import {ModsPage} from './pages/modList/modsPage';
 import {
   BrowserRouter as Router,
@@ -9,7 +9,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import {ProfilePage} from './pages/profiles/profilePage';
-import {useRef} from 'react';
+import {ReactNode, useContext, useEffect, useRef, useState} from 'react';
 import {ResponsiveDrawer} from './util/components/drawer';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -54,8 +54,37 @@ function SideBar(props: {}) {
   )
 }
 
+function Loader(props: {children: ReactNode}) {
+  const [loading, setLoading] = useState(false);
+  const modContext = useContext(ModContext);
+
+  useEffect(() => {
+    setLoading(true);
+
+    Promise.all([
+      modContext.reloadProfiles(),
+    ]).then(() => setLoading(false));
+
+    return () => {
+      setLoading(false);
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <>
+        <Backdrop sx={{zIndex: (theme) => theme.zIndex.drawer + 1}} open>
+          <CircularProgress />
+        </Backdrop>
+        {props.children}
+      </>
+    )
+  }
+
+  return (<>{props.children}</>)
+}
+
 function App() {
-  let drawer = useRef<HTMLDivElement>(null);
   return (
     <ThemeProvider theme={darkTheme}>
       <ModContextProvider>
@@ -69,14 +98,16 @@ function App() {
         }}>
           <div className="App" >
             <header className="App-header" >
-              <Router>
-                <ResponsiveDrawer drawer={<SideBar />} >
-                  <Routes>
-                    <Route path="/" element={<ModsPage />} />
-                    <Route path="/profiles" element={<ProfilePage />} />
-                  </Routes>
-                </ResponsiveDrawer>
-              </Router>
+              <Loader>
+                <Router>
+                  <ResponsiveDrawer drawer={<SideBar />} >
+                    <Routes>
+                      <Route path="/" element={<ModsPage />} />
+                      <Route path="/profiles" element={<ProfilePage />} />
+                    </Routes>
+                  </ResponsiveDrawer>
+                </Router>
+              </Loader>
             </header>
           </div>
         </Box>

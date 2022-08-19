@@ -5,7 +5,7 @@ import {ResHandler} from '../../../util/util';
 const profile = express();
 
 profile.get('/getProfiles', (req: Request, res: Response) => {
-    ResHandler.success(res, {data: profiles});
+    ResHandler.success(res, {profiles});
 });
 
 export {profile as profileApp};

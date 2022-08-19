@@ -1,6 +1,6 @@
 import {Alert, Box, Container, Paper, SpeedDial, SpeedDialAction, SpeedDialIcon, Stack} from "@mui/material";
 import {useContext, useEffect, useState} from "react";
-import {ModContext, ModData} from "../../services/modProvider";
+import {ModContext, ModData} from "../../services/modProvider/modProvider";
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from "@mui/material/IconButton";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -57,10 +57,6 @@ export function ModsPage() {
   const [open, setOpen] = useState(false);
 
   let modDisplay = modContext.getSelectedProfile()?.mods.map((val) => <ModItem key={val.fileName} modData={val} />);
-
-  useEffect(() => {
-    modContext.reloadMods();
-  }, []);
 
   return (
     <Container maxWidth="md">

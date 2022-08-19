@@ -1,16 +1,18 @@
 import React, {createContext, useState} from "react";
 import axios from "axios";
+import {ProfileAPI} from "./profile.model";
 
 type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export interface ModContextType {
-  profiles: {
-    [id: string]: ProfileType
-  };
+  profiles: ProfileHolder;
   selectedProfile: string;
 }
 
-export interface ProfileType {
+export interface ProfileHolder {
+  [id: string]: ProfileType;
+}
+export interface ProfileType extends ProfileAPI {
   mods: ModData[];
 }
 
@@ -28,7 +30,7 @@ export interface AddModData {
 
 const initialModContext: ModContextType = {
   profiles: {},
-  selectedProfile: 'someRandomID',
+  selectedProfile: '',
 }
 
 class ModContextState {
@@ -50,28 +52,65 @@ class ModContextState {
     return null;
   }
 
-  async reloadMods(id: string = this.mods.selectedProfile) {
-    const response = await handleAxios(() => axios.get(`/server/api/mod/getMods/${id}`));
+  // reload all the profiles
+  async reloadProfiles(options?: {
+    reloadMods?: boolean, // Reload all of the fetched profiles' mods (true)
+    autoSelectProfile?: boolean, // If the selected profile doesn't exist, choose the first profile (true)
+  }) {
+    const response = await handleAxios(() => axios.get('/server/api/profile/getProfiles'));
 
-    if (response) {
+    if (response && response.data) {
+      let profileResponse: {[id: string]: ProfileAPI} = {...response.data.data.profiles};
+
+      let profiles: ProfileHolder = {};
+
+      Object.values(profileResponse).forEach((profile) => {
+        profiles[profile.id]=({mods: [], ...profile})
+      });
+
+      let newProfiles = {...this.mods, profiles: profiles};
+
+      if ((options?.autoSelectProfile ?? true) === true && this.mods.profiles[this.mods.selectedProfile] == null) {
+        newProfiles.selectedProfile = Object.keys(profiles)[0] ?? ''
+      }
+
+      if (options?.reloadMods ?? true === true) {
+        await Promise.all(Object.keys(profiles).map(async (id) => {
+          return await this.reloadMods(id, {save: false, modData: newProfiles});
+        }));
+      }
+
+      this.setMods(newProfiles);
+    }
+  }
+
+  // reload the mods associated with the current profile
+  async reloadMods(id: string = this.mods.selectedProfile, options?: {
+    save?: boolean, // call this.setMods
+    modData?: ModContextType // use provided 'modData' instead of this.mods
+  }) {
+    const response = await handleAxios(() => axios.get(`/server/api/mod/getMods/${id}`));
+    const mods = options?.modData ?? this.mods;
+
+    if (id != '' && response) {
       let files: ModData[] = [...response.data?.data.files];
 
-      const profile: ProfileType = {
-        mods: files
-      };
+      const profile: ProfileHolder = { ...mods.profiles };
 
-      this.setMods({
-        ...this.mods,
-        profiles: {
-          someRandomID: profile,
-        },
-      });
+      profile[id].mods = files;
+
+      if (options?.save ?? true === true) {
+        this.setMods({
+          ...this.mods,
+          profiles: profile
+        });
+      }
     }
   }
 
   async addMod(data: {
     id?: string,
-    files?: FileList,
+    files?: AddModData[],
     onUploadProgress?: (data: any) => void,
     autoReload?: boolean, // disable auto calling 'reloadMods' when false (defaults to true)
   }) {
@@ -84,8 +123,23 @@ class ModContextState {
 
       // add data to formData
       for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i], files[i].name);
+        formData.append('files', files[i].file, files[i].file.name);
       }
+
+      let mods: {
+        fileName: string,
+        name?: string,
+        description?: string,
+        link?: string,
+      }[] = files.map((file) => {
+        return {
+          fileName: file.file.name,
+          name: file.name,
+          description: file.description,
+        }
+      })
+      const fileData = new Blob([JSON.stringify(mods)], {type: 'application/json'});
+      formData.append('fileData', fileData, '');
       formData.append('profileId', data.id);
       
       // create query
@@ -143,60 +197,6 @@ class ModContextState {
     if (data.autoReload === true) {
       await this.reloadMods(data.id);
     } 
-  }
-
-  async addMod2(data: {
-    id?: string,
-    files?: AddModData[],
-    onUploadProgress?: (data: any) => void,
-    autoReload?: boolean, // disable auto calling 'reloadMods' when false (defaults to true)
-  }) {
-    data.id = data.id ?? this.mods.selectedProfile;
-    data.autoReload = data.autoReload ?? true;
-
-    const files = data.files;
-    if (files) {
-      const formData = new FormData();
-
-      // add data to formData
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i].file, files[i].file.name);
-      }
-
-      let mods: {
-        fileName: string,
-        name?: string,
-        description?: string,
-        link?: string,
-      }[] = files.map((file) => {
-        return {
-          fileName: file.file.name,
-          name: file.name,
-          description: file.description,
-        }
-      })
-      const fileData = new Blob([JSON.stringify(mods)], {type: 'application/json'});
-      formData.append('fileData', fileData, '');
-      formData.append('profileId', data.id);
-      
-      // create query
-      const response = await handleAxios(() => axios.postForm(
-        "/server/api/mod/addMod",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          },
-          onUploadProgress: data.onUploadProgress
-        }
-      ));
-
-      if (data.autoReload == true && response?.data?.success === true) {
-        await this.reloadMods(data.id);
-      }
-
-      return response;
-    }
   }
 }
 
