@@ -202,6 +202,20 @@ class ModContextState {
       await this.reloadMods(data.id);
     } 
   }
+
+  async createProfile(data: {id: string, path: string, name: string}) {
+    await handleAxios(() => axios.post('/server/api/profile/createProfile', {profile: data}));
+
+    await this.reloadProfiles();
+  }
+
+  async removeProfile(profileId: string, options?: {autoReload?: boolean}) {
+    await handleAxios(() => axios.post('/server/api/profile/removeProfile', {profileId: profileId}));
+
+    if ((options?.autoReload ?? true) === true) {
+      await this.reloadProfiles();
+    }
+  }
 }
 
 export const ModContext = createContext<ModContextState>(new ModContextState(initialModContext, () => {}));

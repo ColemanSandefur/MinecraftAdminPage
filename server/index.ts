@@ -1,9 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import {Profile} from './profile.model';
-import {ModManager} from './routes/api/mod/modManager';
 import {apiApp} from './routes/api/apiRoutes';
-import path from 'path';
 import {ProfileManager} from './routes/api/profile/profileManager';
 
 dotenv.config();

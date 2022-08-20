@@ -22,4 +22,17 @@ profile.post("/createProfile", async (req: Request, res: Response) => {
     }
 });
 
+profile.post("/removeProfile", async (req: Request, res: Response) => {
+    try {
+        const profileId: string = req.body.profileId;
+
+        await profileManager.removeProfile(profileId);
+
+        ResHandler.success(res, {message: "Successfully removed profile"});
+    } catch (err: any) {
+        console.error('Failed to finish /removeProfile: ', (err as Error).message);
+        ResHandler.fail(res, {message: "Failed to remove profile"});
+    }
+});
+
 export {profile as profileApp};

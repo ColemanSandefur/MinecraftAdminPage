@@ -1,8 +1,11 @@
-import {Box, BoxProps, Container, IconButton, List, Paper, Stack} from "@mui/material";
-import {useContext, useEffect, useRef} from "react";
+import {Box, BoxProps, Container, IconButton, Paper, SpeedDial, SpeedDialAction, SpeedDialIcon, Stack} from "@mui/material";
+import {useContext, useEffect, useRef, useState} from "react";
 import {ModContext, ProfileType} from "../../services/modProvider/modProvider";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {ProfileDialog} from "./profileSubmit";
 
 function ProfileEntry(props: {profile: ProfileType}) {
   const modContext = useContext(ModContext);
@@ -24,7 +27,7 @@ function ProfileEntry(props: {profile: ProfileType}) {
     const icon = (currentSelected) ? <CheckIcon sx={{color: 'green'}}/> : <AddCircleIcon />;
 
     return (
-      <IconButton onClick={() => modContext.setProfile(props.profile.id)} disabled={currentSelected}>
+      <IconButton aria-label="select profile" onClick={() => modContext.setProfile(props.profile.id)} disabled={currentSelected}>
         {icon}
       </IconButton>
     )
@@ -40,29 +43,48 @@ function ProfileEntry(props: {profile: ProfileType}) {
           <Field fieldName='path'>{props.profile.path}</Field>
           <Field fieldName='Mods'>{props.profile.mods.length}</Field>
         </Box>
-        <List>
+        <Stack sx={{padding: 0}}>
           <SelectButton />
-        </List>
+          <IconButton aria-label="delete profile" onClick={() => modContext.removeProfile(props.profile.id)}>
+            <DeleteIcon />
+          </IconButton>
+        </Stack>
       </Paper>
     </>
   )
 }
 
 export function ProfilePage() {
-  const modContext = useRef(useContext(ModContext));
-  const entries = Object.values(modContext.current.mods.profiles).map((profile) => {
+  const modContextRef = useRef(useContext(ModContext));
+  const modContext = useContext(ModContext);
+  const entries = Object.values(modContext.mods.profiles).map((profile) => {
     return (<ProfileEntry key={profile.id} profile={profile} />)
   });
 
   useEffect(() => {
-    modContext.current.reloadProfiles();
+    modContextRef.current.reloadProfiles();
   },[])
+
+  const [open, setOpen] = useState(false);
 
   return (
     <Container maxWidth='md'>
       <Stack spacing={2}>
         {entries}
       </Stack>
+      <SpeedDial
+        ariaLabel=""
+        sx={{position: 'fixed', bottom: 16, right: 16}}
+        icon={<SpeedDialIcon />}
+      >
+        <SpeedDialAction
+          icon={<CreateNewFolderIcon />}
+          title={'Create Profile'}
+          tooltipTitle={'Create Profile'}
+          onClick={() => setOpen(true)}
+        />
+      </SpeedDial>
+      <ProfileDialog open={open} setOpen={setOpen} />
     </Container>
   )
 }

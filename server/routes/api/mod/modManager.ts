@@ -80,7 +80,7 @@ export class ModManager {
       await moveFile(options.oldPath, path.join(this.directory, mod.fileName));
     }
 
-    if (options.autoSave ?? true === true) {
+    if ((options.autoSave ?? true) === true) {
       await this.saveMetadata();
     }
   }
@@ -92,7 +92,7 @@ export class ModManager {
       await safe(() => removeFile(path.join(this.directory, modName)));
     }
 
-    if (options.autoSave ?? true === true) {
+    if ((options.autoSave ?? true) === true) {
       await this.saveMetadata();
     }
   }

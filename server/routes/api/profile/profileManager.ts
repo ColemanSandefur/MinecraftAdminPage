@@ -69,6 +69,12 @@ export class ProfileManager {
     }
 
     async addProfile(rawProfile: RawProfile, options?: {autoSave?: boolean}) {
+        for (const value of Object.values(this.profiles)) {
+            if (value.path === rawProfile.path) {
+                throw new Error("Cannot have two profiles in the same location");
+            }
+        }
+        if (rawProfile.path)
         this.profiles[rawProfile.id] = {...rawProfile, manager: new ModManager(rawProfile.path)};
 
         await this.profiles[rawProfile.id].manager.loadModsDir();

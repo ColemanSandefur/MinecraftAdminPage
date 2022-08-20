@@ -45,9 +45,11 @@ function ModItem(data: {modData: ModData}) {
           {body}
         </Stack>
       </Box>
-      <IconButton onClick={() => modContext.removeMod({fileName: data.modData.fileName})}>
-        <DeleteIcon />
-      </IconButton>
+      <Stack>
+        <IconButton onClick={() => modContext.removeMod({fileName: data.modData.fileName})}>
+          <DeleteIcon />
+        </IconButton>
+      </Stack>
     </Paper>
   )
 }
