@@ -1,58 +1,8 @@
 import {ThemeProvider} from '@emotion/react';
-import {Backdrop, Box, CircularProgress, createTheme, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from '@mui/material';
+import {Backdrop, Box, CircularProgress, createTheme} from '@mui/material';
 import {ModContext, ModContextProvider} from './services/modProvider/modProvider';
-import {ModsPage} from './pages/modList/modsPage';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-} from "react-router-dom";
-import {ProfilePage} from './pages/profiles/profilePage';
 import {ReactNode, useContext, useEffect, useRef, useState} from 'react';
-import {ResponsiveDrawer} from './util/components/drawer';
-import ExtensionIcon from '@mui/icons-material/Extension';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-  },
-});
-
-function SideBar(_props: {}) {
-  const navigate = useNavigate();
-
-  const paths: {text: string, path: string, icon?: JSX.Element}[] = [
-    {
-      text: 'Mods',
-      path: '/',
-      icon: <ExtensionIcon />
-    },
-    {
-      text: 'Profiles',
-      path: '/profiles',
-      icon: <AccountCircleIcon />
-    }
-  ];
-
-  const obj = paths.map((value) => {
-    return (
-      <ListItem key={value.path}>
-        <ListItemButton onClick={() => navigate(value.path)}>
-          {value.icon != null && <ListItemIcon>{value.icon}</ListItemIcon>}
-          <ListItemText>{value.text}</ListItemText>
-        </ListItemButton>
-      </ListItem>
-    )
-  });
-
-  return (
-    <List>
-      {obj}
-    </List>
-  )
-}
+import {AppRouter} from './Router';
 
 function Loader(props: {children: ReactNode}) {
   const [loading, setLoading] = useState(false);
@@ -84,41 +34,44 @@ function Loader(props: {children: ReactNode}) {
   return (<>{props.children}</>)
 }
 
-function Toolbar() {
-  const modContext = useContext(ModContext);
-
-  return <>{modContext.getSelectedProfile()?.name}</>
+function Providers(props: {children: ReactNode}) {
+  return (
+    <ModContextProvider>
+      {props.children}
+    </ModContextProvider>
+  )
 }
 
 function App() {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  const [theme] = useState(createTheme({
+    palette: {
+      mode: prefersDark ? "dark" : "light"
+    }
+  }));
+
   return (
-    <ThemeProvider theme={darkTheme}>
-      <ModContextProvider>
+    <Providers>
+      <ThemeProvider theme={theme}>
         <Box sx={{
           width: "100%",
           height: "100%",
           minHeight: "100vh",
           minWidth: "100vw",
-          backgroundColor: darkTheme.palette.background.default,
-          color: darkTheme.palette.text.primary,
+          backgroundColor: theme.palette.background.default,
+          color: theme.palette.text.primary,
         }}>
           <div className="App" >
             <header className="App-header" >
               <Loader>
-                <Router>
-                  <ResponsiveDrawer drawer={<SideBar />} toolbar={<Toolbar />}>
-                    <Routes>
-                      <Route path="/" element={<ModsPage />} />
-                      <Route path="/profiles" element={<ProfilePage />} />
-                    </Routes>
-                  </ResponsiveDrawer>
-                </Router>
+                <AppRouter />
               </Loader>
             </header>
           </div>
         </Box>
-      </ModContextProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </Providers>
   );
 }
 

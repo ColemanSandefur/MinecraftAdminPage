@@ -1,4 +1,4 @@
-import React, {createContext, useState} from "react";
+import React, {createContext, ReactNode, useState} from "react";
 import axios from "axios";
 import {ProfileAPI} from "./profile.model";
 
@@ -220,7 +220,7 @@ class ModContextState {
 
 export const ModContext = createContext<ModContextState>(new ModContextState(initialModContext, () => {}));
 
-export function ModContextProvider(data: {children: JSX.Element}) {
+export function ModContextProvider(data: {children: ReactNode}) {
   const [mods, setMods] = useState(initialModContext);
   const state = new ModContextState(mods, setMods);
   return (
